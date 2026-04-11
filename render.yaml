@@ -1,0 +1,6 @@
+services:
+  - type: static
+    name: the-plant-man-inc
+    env: static
+    staticPublishPath: .
+    pullRequestPreviewsEnabled: false

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlantEscapes In Paradise Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="admin-body">
+  <div class="admin-shell">
+    <header class="admin-header">
+      <div>
+        <p class="eyebrow">PlantEscapes In Paradise</p>
+        <h1>Back Admin Orders</h1>
+        <p>Every custom order confirmed on the main page lands here.</p>
+      </div>
+      <a class="admin-home" href="./index.html">Back To Site</a>
+    </header>
+
+    <section class="admin-grid">
+      <article class="admin-card">
+        <h2>Order Summary</h2>
+        <div id="adminSummary" class="admin-summary"></div>
+      </article>
+      <article class="admin-card">
+        <h2>Saved Custom Orders</h2>
+        <div id="ordersList" class="orders-list"></div>
+      </article>
+    </section>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

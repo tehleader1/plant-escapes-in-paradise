@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlantEscapes In Paradise | Charlotte NC Custom Plant Orders</title>
+  <meta name="description" content="PlantEscapes In Paradise creates custom plant orders in Charlotte, NC. Browse featured indoor and tropical plants, confirm your order in-page, and get your payment link when your order is ready.">
+  <meta name="keywords" content="Charlotte NC plants, custom plant orders Charlotte, indoor plants Charlotte, tropical plants Charlotte, PlantEscapes In Paradise">
+  <meta name="theme-color" content="#153b24">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="site-shell">
+    <header class="topbar">
+      <button class="contact-chip" id="contactButton">Contact - Berry 704-533-5163 · Developer Anthony 980-230-6202</button>
+      <div class="brand-lockup">
+        <p class="eyebrow">Charlotte, NC Plant Styling</p>
+        <h1>PlantEscapes In Paradise</h1>
+        <p class="tagline">Custom plant orders, local delivery energy, and one smooth order page.</p>
+      </div>
+      <button class="location-chip" id="locationButton">Charlotte, NC</button>
+    </header>
+
+    <main class="main-grid">
+      <aside class="ad-column left">
+        <article class="ad-card">
+          <p class="eyebrow">Targeted Ad</p>
+          <h2>Patio Calm</h2>
+          <p>Need a statement plant for a Charlotte patio, porch, or apartment glow-up? Start with a ready-to-order tropical feature.</p>
+        </article>
+        <article class="ad-card warm">
+          <p class="eyebrow">Local Hit</p>
+          <h2>Queen City Green</h2>
+          <p>Fast local discovery, local custom orders, and a plant page that stays focused on one choice at a time.</p>
+        </article>
+      </aside>
+
+      <section class="hero-card">
+        <div class="hero-stage">
+          <div class="hero-topline">
+            <div class="mini-menu" id="plantMenu"></div>
+            <button class="admin-link" id="adminOpenButton">Back Admin</button>
+          </div>
+
+          <button class="carousel-arrow left" id="prevPlant" aria-label="Previous plant">
+            <span>&larr;</span>
+          </button>
+
+          <div class="hero-image-wrap">
+            <img id="plantImage" class="plant-image" alt="Featured plant">
+          </div>
+
+          <button class="carousel-arrow right" id="nextPlant" aria-label="Next plant">
+            <span>&rarr;</span>
+          </button>
+        </div>
+
+        <div class="product-details">
+          <div class="product-copy">
+            <p class="eyebrow" id="plantCategory">Indoor Favorite</p>
+            <h2 id="plantName">Bird of Paradise</h2>
+            <p class="price" id="plantPrice">$95</p>
+            <p class="definition" id="plantDefinition">A bold tropical plant that makes an instant statement in a Charlotte living room, office, or patio transition zone.</p>
+            <div class="feature-points" id="featurePoints"></div>
+          </div>
+
+          <form class="order-card" id="orderForm">
+            <h3>Confirm Custom Order</h3>
+            <p>Your card payment link will be sent in a second email when the plant order is ready to go out.</p>
+            <label>
+              Plant
+              <input id="orderPlant" name="plant" readonly>
+            </label>
+            <label>
+              Quantity
+              <input id="orderQuantity" name="quantity" type="number" min="1" value="1" required>
+            </label>
+            <label>
+              Email or Text Number
+              <input id="orderContact" name="contact" type="text" placeholder="you@example.com or 704-000-0000" required>
+            </label>
+            <label>
+              Notes
+              <textarea id="orderNotes" name="notes" rows="4" placeholder="Tell us your space, lighting, or the plant you want."></textarea>
+            </label>
+            <button type="submit" class="confirm-button">Confirm Custom Order</button>
+            <p class="order-status" id="orderStatus">Orders save straight into the admin page.</p>
+          </form>
+        </div>
+      </section>
+
+      <aside class="ad-column right">
+        <article class="ad-card cool">
+          <p class="eyebrow">Targeted Ad</p>
+          <h2>Office Plant Boost</h2>
+          <p>Bring polished plant styling into offices, waiting rooms, and local Charlotte business spaces.</p>
+        </article>
+        <article class="ad-card">
+          <p class="eyebrow">Quick Option</p>
+          <h2>Gift A Plant</h2>
+          <p>Use the in-page custom order flow for gifts, home staging, and “I need something beautiful today” orders.</p>
+        </article>
+      </aside>
+    </main>
+
+    <section class="seo-strip">
+      <article>
+        <h3>Charlotte NC Custom Plant Orders</h3>
+        <p>PlantEscapes In Paradise is built for local Charlotte searches, local custom orders, and a cleaner path from product discovery to confirmed order.</p>
+      </article>
+      <article>
+        <h3>Why This Page Works</h3>
+        <p>One product stays front and center, the arrows keep browsing simple, and the order card is always right under the main plant view.</p>
+      </article>
+      <article>
+        <h3>Built For Local Discovery</h3>
+        <p>Charlotte-focused copy, local contact details, and targeted ad zones help the site rank for neighborhood and city-level plant searches.</p>
+      </article>
+    </section>
+  </div>
+
+  <div class="modal" id="contactModal" hidden>
+    <div class="modal-card">
+      <button class="modal-close" data-close-modal>&times;</button>
+      <h2>Contact PlantEscapes In Paradise</h2>
+      <p>Berry: 704-533-5163</p>
+      <p>Developer Anthony: 980-230-6202</p>
+      <p>Use the custom order form on the main page to tell us exactly what plant and quantity you want.</p>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
