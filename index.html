@@ -21,7 +21,10 @@
         <h1>PlantEscapes In Paradise</h1>
         <p class="tagline">Custom plant orders, local delivery energy, and one smooth order page.</p>
       </div>
-      <button class="location-chip" id="locationButton">Charlotte, NC</button>
+      <div class="topbar-actions">
+        <button class="settings-chip" id="settingsButton">Settings</button>
+        <button class="location-chip" id="locationButton">Charlotte, NC</button>
+      </div>
     </header>
 
     <main class="main-grid">
@@ -65,6 +68,13 @@
             <p class="price" id="plantPrice">$95</p>
             <p class="definition" id="plantDefinition">A bold tropical plant that makes an instant statement in a Charlotte living room, office, or patio transition zone.</p>
             <div class="feature-points" id="featurePoints"></div>
+            <div class="product-actions">
+              <button class="secondary-button" id="showCustomOrderButton">Open Charlotte Custom Order</button>
+              <button class="secondary-button bulk" id="floridaBulkButton">Order Direct Through Florida Bulk</button>
+            </div>
+            <div class="delivery-note">
+              If someone emails directly asking for a plant, send them here for a Charlotte custom order. We are directly located in Charlotte and can deliver anywhere in Charlotte, NC. Florida bulk direct-ordering is coming soon.
+            </div>
           </div>
 
           <form class="order-card" id="orderForm">
@@ -120,6 +130,33 @@
         <p>Charlotte-focused copy, local contact details, and targeted ad zones help the site rank for neighborhood and city-level plant searches.</p>
       </article>
     </section>
+
+    <section class="reviews-section">
+      <article class="reviews-card">
+        <div class="reviews-head">
+          <div>
+            <p class="eyebrow">Feedback + Rate / Review</p>
+            <h2>Customer Reviews</h2>
+            <p>After a purchase or custom order, we can cue a review request in the follow-up email and keep the best feedback right here.</p>
+          </div>
+          <button class="secondary-button" id="leaveReviewButton">Leave A Review</button>
+        </div>
+        <div class="reviews-list" id="reviewsList"></div>
+      </article>
+
+      <article class="reviews-card account-card">
+        <p class="eyebrow">Remembered Orders</p>
+        <h2>Login / Guest Mode</h2>
+        <p>Guest mode can still use payment features later. Real login remembers the last 2-3 plants you bought. For safety, card details should be handled by the payment processor, not stored raw in this website.</p>
+        <div class="login-options">
+          <button class="secondary-button" data-login-provider="Google">Google Login</button>
+          <button class="secondary-button" data-login-provider="Yahoo">Yahoo Login</button>
+          <button class="secondary-button" data-login-provider="Microsoft">Microsoft Login</button>
+          <button class="secondary-button" data-login-provider="Guest">Username Guest Mode</button>
+        </div>
+        <div class="remembered-orders" id="rememberedOrders"></div>
+      </article>
+    </section>
   </div>
 
   <div class="modal" id="contactModal" hidden>
@@ -129,6 +166,48 @@
       <p>Berry: 704-533-5163</p>
       <p>Developer Anthony: 980-230-6202</p>
       <p>Use the custom order form on the main page to tell us exactly what plant and quantity you want.</p>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal" hidden>
+    <div class="modal-card">
+      <button class="modal-close" data-close-settings>&times;</button>
+      <h2>Page Settings</h2>
+      <p>This page is built for Charlotte custom orders first, with Florida bulk direct ordering marked as coming soon.</p>
+      <div class="settings-grid">
+        <div class="summary-pill">Charlotte delivery coverage: active</div>
+        <div class="summary-pill">Florida bulk route: coming soon</div>
+        <div class="summary-pill">Custom order form: in-page</div>
+        <div class="summary-pill">Guest checkout memory: disabled</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="reviewModal" hidden>
+    <div class="modal-card">
+      <button class="modal-close" data-close-review>&times;</button>
+      <h2>Leave A Review</h2>
+      <form id="reviewForm">
+        <label>
+          Your Name
+          <input id="reviewName" type="text" required>
+        </label>
+        <label>
+          Rating
+          <select id="reviewRating">
+            <option>5 Stars</option>
+            <option>4 Stars</option>
+            <option>3 Stars</option>
+            <option>2 Stars</option>
+            <option>1 Star</option>
+          </select>
+        </label>
+        <label>
+          Review
+          <textarea id="reviewText" rows="4" required></textarea>
+        </label>
+        <button type="submit" class="confirm-button">Save Review</button>
+      </form>
     </div>
   </div>
 

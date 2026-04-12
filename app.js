@@ -1,4 +1,6 @@
 const STORAGE_KEY = "plantescapes_orders_v1";
+const REVIEWS_KEY = "plantescapes_reviews_v1";
+const ACCOUNT_KEY = "plantescapes_account_v1";
 
 const PLANTS = [
   {
@@ -31,6 +33,30 @@ const PLANTS = [
 ];
 
 let currentIndex = 0;
+
+function getReviews() {
+  try {
+    return JSON.parse(localStorage.getItem(REVIEWS_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveReviews(reviews) {
+  localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviews));
+}
+
+function getAccount() {
+  try {
+    return JSON.parse(localStorage.getItem(ACCOUNT_KEY) || "{\"provider\":\"Guest\",\"history\":[]}");
+  } catch {
+    return { provider: "Guest", history: [] };
+  }
+}
+
+function saveAccount(account) {
+  localStorage.setItem(ACCOUNT_KEY, JSON.stringify(account));
+}
 
 function getOrders() {
   try {
@@ -98,6 +124,7 @@ function submitOrder(event) {
   const contact = document.getElementById("orderContact").value.trim();
   const notes = document.getElementById("orderNotes").value.trim();
   const status = document.getElementById("orderStatus");
+  const account = getAccount();
 
   if (!contact) {
     status.textContent = "Please enter an email or text number so we can confirm your custom order.";
@@ -114,15 +141,47 @@ function submitOrder(event) {
     contact,
     notes,
     location: "Charlotte, NC",
+    routeType: "charlotte-custom",
     status: "new",
     createdAt: new Date().toLocaleString()
   });
   saveOrders(orders);
+  if (account.provider && account.provider !== "Guest") {
+    account.history = [
+      { plant: plant.name, price: plant.price, quantity, createdAt: new Date().toLocaleString() },
+      ...(account.history || [])
+    ].slice(0, 3);
+    saveAccount(account);
+    renderRememberedOrders();
+  }
 
   status.textContent = `Custom order saved for ${plant.name}. We will follow up with the payment credit-card page when the order is ready to send.`;
   event.target.reset();
   document.getElementById("orderPlant").value = `${plant.name} - ${plant.price}`;
   document.getElementById("orderQuantity").value = 1;
+}
+
+function saveFloridaBulkRequest() {
+  const plant = currentPlant();
+  const orders = getOrders();
+  orders.unshift({
+    id: `PEIP-FL-${Date.now()}`,
+    plant: plant.name,
+    category: plant.category,
+    price: plant.price,
+    quantity: "Coming soon",
+    contact: "Route through Berry 704-533-5163",
+    notes: "Florida bulk direct order lane requested from the homepage.",
+    location: "Florida Bulk",
+    routeType: "florida-bulk-coming-soon",
+    status: "coming-soon",
+    createdAt: new Date().toLocaleString()
+  });
+  saveOrders(orders);
+  const status = document.getElementById("orderStatus");
+  if (status) {
+    status.textContent = `${plant.name} has been marked for the Florida Bulk direct-order lane. We will add the direct supplier information next.`;
+  }
 }
 
 function toggleContactModal(show) {
@@ -160,6 +219,7 @@ function renderAdminPage() {
       <p><strong>Contact:</strong> ${order.contact}</p>
       <p><strong>Price:</strong> ${order.price}</p>
       <p><strong>Location:</strong> ${order.location}</p>
+      <p><strong>Route Type:</strong> ${order.routeType || "charlotte-custom"}</p>
       <p><strong>Placed:</strong> ${order.createdAt}</p>
       <p><strong>Notes:</strong> ${order.notes || "No extra notes."}</p>
       <p><strong>Status:</strong> ${order.status}</p>
@@ -167,8 +227,74 @@ function renderAdminPage() {
   `).join("");
 }
 
+function renderReviews() {
+  const reviewsList = document.getElementById("reviewsList");
+  if (!reviewsList) return;
+  const reviews = getReviews();
+  if (!reviews.length) {
+    reviewsList.innerHTML = `<div class="review-item"><h3>No reviews yet</h3><p>After a custom order or purchase, the email flow can ask for a review and show it here.</p></div>`;
+    return;
+  }
+  reviewsList.innerHTML = reviews.map((review) => `
+    <article class="review-item">
+      <h3>${review.name}</h3>
+      <p><strong>${review.rating}</strong></p>
+      <p>${review.text}</p>
+    </article>
+  `).join("");
+}
+
+function renderRememberedOrders() {
+  const remembered = document.getElementById("rememberedOrders");
+  if (!remembered) return;
+  const account = getAccount();
+  const history = account.history || [];
+  remembered.innerHTML = `
+    <div class="summary-pill">Mode: ${account.provider || "Guest"}</div>
+    <div class="summary-pill">Saved purchase memory: ${account.provider === "Guest" ? "Guest mode does not remember purchases." : "Last 2-3 plants stay here."}</div>
+    <div class="summary-pill">Card memory: handled later by secure payment processor only.</div>
+    ${history.length ? history.map((item) => `<div class="summary-pill">${item.plant} · ${item.price} · Qty ${item.quantity}</div>`).join("") : `<div class="summary-pill">No remembered plant history yet.</div>`}
+  `;
+}
+
+function openModal(id, show) {
+  const modal = document.getElementById(id);
+  if (!modal) return;
+  modal.hidden = !show;
+}
+
+function bindLoginButtons() {
+  document.querySelectorAll("[data-login-provider]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const provider = button.dataset.loginProvider;
+      const account = getAccount();
+      account.provider = provider;
+      account.history = account.history || [];
+      saveAccount(account);
+      renderRememberedOrders();
+    });
+  });
+}
+
+function submitReview(event) {
+  event.preventDefault();
+  const reviews = getReviews();
+  reviews.unshift({
+    name: document.getElementById("reviewName").value.trim(),
+    rating: document.getElementById("reviewRating").value,
+    text: document.getElementById("reviewText").value.trim()
+  });
+  saveReviews(reviews);
+  renderReviews();
+  event.target.reset();
+  openModal("reviewModal", false);
+}
+
 function initHomePage() {
   renderPlant();
+  renderReviews();
+  renderRememberedOrders();
+  bindLoginButtons();
   document.getElementById("prevPlant")?.addEventListener("click", () => changePlant(-1));
   document.getElementById("nextPlant")?.addEventListener("click", () => changePlant(1));
   document.getElementById("orderForm")?.addEventListener("submit", submitOrder);
@@ -180,6 +306,22 @@ function initHomePage() {
   document.getElementById("locationButton")?.addEventListener("click", () => {
     window.open("https://www.google.com/maps/search/?api=1&query=Charlotte%2C%20NC", "_blank", "noopener");
   });
+  document.getElementById("settingsButton")?.addEventListener("click", () => openModal("settingsModal", true));
+  document.querySelector("[data-close-settings]")?.addEventListener("click", () => openModal("settingsModal", false));
+  document.getElementById("settingsModal")?.addEventListener("click", (event) => {
+    if (event.target.id === "settingsModal") openModal("settingsModal", false);
+  });
+  document.getElementById("leaveReviewButton")?.addEventListener("click", () => openModal("reviewModal", true));
+  document.querySelector("[data-close-review]")?.addEventListener("click", () => openModal("reviewModal", false));
+  document.getElementById("reviewModal")?.addEventListener("click", (event) => {
+    if (event.target.id === "reviewModal") openModal("reviewModal", false);
+  });
+  document.getElementById("reviewForm")?.addEventListener("submit", submitReview);
+  document.getElementById("showCustomOrderButton")?.addEventListener("click", () => {
+    document.getElementById("orderForm")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document.getElementById("orderQuantity")?.focus();
+  });
+  document.getElementById("floridaBulkButton")?.addEventListener("click", saveFloridaBulkRequest);
   document.getElementById("adminOpenButton")?.addEventListener("click", () => {
     window.location.href = "./admin.html";
   });
