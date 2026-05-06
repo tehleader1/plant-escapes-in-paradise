@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlantEscapes In Paradise | Full Plant Inventory</title>
+  <meta name="description" content="Full PlantEscapes In Paradise plant inventory for Charlotte bulk plant delivery, florist support, flea market sales, and consulting orders.">
+  <meta name="theme-color" content="#153b24">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css?v=20260506-ad-routes">
+</head>
+<body>
+  <div class="site-shell inventory-page-shell">
+    <header class="topbar">
+      <a class="admin-home" href="./index.html">Back To Main Site</a>
+      <div class="brand-lockup">
+        <p class="eyebrow">Full plant inventory</p>
+        <h1>Available Plant Catalog</h1>
+        <p class="tagline">Search every line item, pick the product, then return to the top model for order routing.</p>
+      </div>
+      <div class="topbar-actions">
+        <a class="delivery-bot-link" href="mailto:zzzanthony123@gmail.com?subject=PlantEscapes%20inventory%20lead&body=Plant%20from%20full%20inventory%3A%20%0AQuantity%3A%20%0ACity%3A%20%0AContact%3A%20%0ANotes%3A%20">Email Inventory Lead</a>
+      </div>
+    </header>
+
+    <main class="inventory-full-panel">
+      <div class="inventory-page-header">
+        <div>
+          <p class="eyebrow">Clear route</p>
+          <h2>Full Inventory Page</h2>
+          <p id="fullInventorySummary">Loading inventory...</p>
+        </div>
+        <label class="inventory-search">
+          Search catalog
+          <input id="inventorySearch" type="search" placeholder="Monstera, 3GAL, hibiscus, palm...">
+        </label>
+      </div>
+      <div class="inventory-grid full-inventory-grid" id="fullInventoryGrid" aria-label="Full alphabetized plant inventory"></div>
+    </main>
+  </div>
+
+  <script src="./app.js?v=20260506-ad-routes"></script>
+</body>
+</html>

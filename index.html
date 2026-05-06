@@ -3,25 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PlantEscapes In Paradise | Charlotte NC Custom Plant Orders</title>
-  <meta name="description" content="PlantEscapes In Paradise creates custom plant orders in Charlotte, NC. Browse a live alphabetized tropical plant inventory with pictures and quantities, confirm your order in-page, and get your payment link when your order is ready.">
-  <meta name="keywords" content="Charlotte NC plants, custom plant orders Charlotte, indoor plants Charlotte, tropical plants Charlotte, wholesale plant inventory, PlantEscapes In Paradise">
+  <title>PlantEscapes In Paradise | Charlotte Plant Delivery & Bulk Orders</title>
+  <meta name="description" content="PlantEscapes In Paradise creates custom plant orders, bulk plant delivery, flea market tent sales, florist outcalls, and interior/exterior plant consulting from Charlotte, NC across the Carolinas, Virginia, Georgia, and Tennessee.">
+  <meta name="keywords" content="Charlotte NC plants, custom plant orders Charlotte, bulk plant delivery Charlotte, florist plant supplier Charlotte, flea market plant vendor, interior exterior plant consulting, PlantEscapes In Paradise">
   <meta name="theme-color" content="#153b24">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20260506-ad-routes">
 </head>
 <body>
   <div class="site-shell">
     <header class="topbar">
       <button class="contact-chip" id="contactButton">Contact - Berry 704-533-5163 · Developer Anthony 980-230-6202</button>
       <div class="brand-lockup">
-        <p class="eyebrow">Charlotte, NC Plant Styling</p>
+        <p class="eyebrow">Charlotte, NC Bulk Plant Delivery</p>
         <h1>PlantEscapes In Paradise</h1>
-        <p class="tagline">Alphabetized live plant inventory, local delivery energy, and one smooth order page.</p>
+        <p class="tagline">Curated plant delivery, bulk sourcing, florist support, weekend market sales, and interior/exterior plant consulting.</p>
       </div>
       <div class="topbar-actions">
+        <a class="delivery-bot-link" href="mailto:zzzanthony123@gmail.com?subject=PlantEscapes%20delivery%20sales%20lead&body=Lead%20source%3A%20website%20delivery%20bot%0APlant%20request%3A%20%0AQuantity%3A%20%0ACity%3A%20Charlotte%20or%20outbound%20%0AContact%20mood%3A%20Curious%20%2F%20Greedy%20for%20green%20%2F%20Need-it-now%0AChannel%20route%3A%20Facebook%20Marketplace%20%2B%20Google%20Business%20Profile%20%2B%20Bing%20Places%20%2B%20Charlotte%20local%20websites%0ANotes%3A%20">Delivery Bot -> Email Lead</a>
         <button class="settings-chip" id="settingsButton">Settings</button>
         <button class="location-chip" id="locationButton">Charlotte, NC</button>
       </div>
@@ -29,15 +30,19 @@
 
     <main class="main-grid">
       <aside class="ad-column left">
-        <article class="ad-card">
+        <article class="ad-card opportunity-card">
+          <div class="ad-signal"><span>Home / Office</span><strong>Warm Lead</strong></div>
           <p class="eyebrow">Targeted Ad</p>
-          <h2>Patio Calm</h2>
-          <p>Need a statement plant for a Charlotte patio, porch, or apartment glow-up? Start with a ready-to-order tropical feature.</p>
+          <h2>Curious?</h2>
+          <p>One call, one plant spark: "What would make this corner look like somebody important lives here?"</p>
+          <div class="ad-route-line"><i></i><i></i><i></i></div>
         </article>
-        <article class="ad-card warm">
+        <article class="ad-card opportunity-card warm">
+          <div class="ad-signal"><span>Bulk Buyer</span><strong>Value Lane</strong></div>
           <p class="eyebrow">Local Hit</p>
-          <h2>Queen City Green</h2>
-          <p>Fast local discovery, local custom orders, and a plant page that stays focused on one choice at a time.</p>
+          <h2>Deal Hunter?</h2>
+          <p>Bulk delivery without big-box confusion. Beautiful plants, personal service, and numbers that make sense.</p>
+          <div class="ad-route-line"><i></i><i></i><i></i></div>
         </article>
       </aside>
 
@@ -54,11 +59,59 @@
 
           <div class="hero-image-wrap">
             <img id="plantImage" class="plant-image" alt="Featured plant">
+            <div class="cockpit-glass" aria-hidden="true">
+              <span class="orbit orbit-one"></span>
+              <span class="orbit orbit-two"></span>
+              <span class="orbit orbit-three"></span>
+            </div>
+            <div class="cockpit-readout">
+              <span>Stock product view</span>
+              <strong id="cockpitProductName">Monstera</strong>
+              <small id="cockpitPhotoSource">Verified stock photo source loading</small>
+            </div>
           </div>
 
           <button class="carousel-arrow right" id="nextPlant" aria-label="Next plant">
             <span>&rarr;</span>
           </button>
+        </div>
+
+        <div class="spaceship-control-deck" aria-label="Interactive plant product controls">
+          <div class="throttle-control">
+            <span>Delivery Throttle</span>
+            <input id="cockpitThrottle" type="range" min="25" max="100" value="68" aria-label="Delivery throttle">
+            <strong id="cockpitThrottleValue">68%</strong>
+          </div>
+          <div class="cockpit-mode-tabs" id="cockpitModeTabs" role="tablist" aria-label="Plant product modes">
+            <button type="button" class="active" data-cockpit-mode="facts">Facts</button>
+            <button type="button" data-cockpit-mode="care">Care</button>
+            <button type="button" data-cockpit-mode="route">Route</button>
+            <button type="button" data-cockpit-mode="margin">Margin</button>
+            <button type="button" data-cockpit-mode="sales">Sales</button>
+          </div>
+          <div class="cockpit-screen">
+            <span id="cockpitModeLabel">Facts Mode</span>
+            <strong id="cockpitModeHeadline">Loading command screen</strong>
+            <p id="cockpitModeBody">The selected product will show stock facts, care data, route math, and sales direction here.</p>
+            <div class="cockpit-progress" aria-hidden="true"><i id="cockpitProgress"></i></div>
+          </div>
+        </div>
+
+        <div class="top-command-panel" aria-label="Product brief view">
+          <div class="command-panel-main">
+            <p class="eyebrow">Product Brief</p>
+            <h2>Live product facts for sales and delivery.</h2>
+            <p id="topCommandSummary">Loading live stock facts, care facts, route facts, risk notes, and sales angle for the selected plant.</p>
+          </div>
+          <div class="command-panel-metrics">
+            <article><span>Product</span><strong id="topCommandProduct">Loading</strong></article>
+            <article><span>Stock View</span><strong id="topCommandStock">--</strong></article>
+            <article><span>Care Facts</span><strong id="topCommandCare">--</strong></article>
+            <article><span>Delivery Beam</span><strong id="topCommandRoute">--</strong></article>
+            <article><span>Market Fit</span><strong id="topCommandMarket">--</strong></article>
+            <article><span>Risk Watch</span><strong id="topCommandRisk">--</strong></article>
+          </div>
+          <button class="command-strip-button" id="topOpenCommandCenterButton" type="button">Open Details</button>
         </div>
 
         <div class="product-details">
@@ -67,14 +120,21 @@
             <h2 id="plantName">Bird of Paradise</h2>
             <p class="price" id="plantPrice">Loading inventory</p>
             <p class="definition" id="plantDefinition">A bold tropical plant that makes an instant statement in a Charlotte living room, office, or patio transition zone.</p>
+            <div class="command-snapshot" id="commandSnapshot" aria-label="Plant product quick facts">
+              <div><span>Stock</span><strong id="commandStock">Stock loading</strong></div>
+              <div><span>Care</span><strong id="commandCare">Care loading</strong></div>
+              <div><span>Route</span><strong id="commandRoute">Route loading</strong></div>
+            </div>
             <div class="feature-points" id="featurePoints"></div>
             <div class="free-photo-links" id="freePhotoLinks" aria-label="Free plant photo source stack"></div>
             <div class="product-actions">
+              <button class="secondary-button command" id="openCommandCenterButton">Open Product Details</button>
               <button class="secondary-button" id="showCustomOrderButton">Open Charlotte Custom Order</button>
+              <a class="secondary-button inventory-route" href="./inventory.html">Show All Inventory</a>
               <button class="secondary-button bulk" id="floridaBulkButton">Order Direct Through Florida Bulk</button>
             </div>
             <div class="delivery-note">
-              If someone emails directly asking for a plant, send them here for a Charlotte custom order. We are directly located in Charlotte and can deliver anywhere in Charlotte, NC. Florida bulk direct-ordering is coming soon.
+              Charlotte is the center beam: personal bulk plant delivery, florist support, cut-flower add-ons, and consulting outcalls from Charlotte toward Virginia, Georgia, and Tennessee. Payment links are sent only after the order is confirmed.
             </div>
           </div>
 
@@ -88,6 +148,24 @@
             <label>
               Quantity
               <input id="orderQuantity" name="quantity" type="number" min="1" value="1" required>
+            </label>
+            <label>
+              Order Lane
+              <select id="orderLane" name="lane">
+                <option>Charlotte bulk delivery</option>
+                <option>Florist / cut-flower support</option>
+                <option>Flea market pickup</option>
+                <option>Consulting design-layout-estimate</option>
+                <option>Virginia / Georgia / Tennessee outcall</option>
+              </select>
+            </label>
+            <label>
+              Contact Mood
+              <select id="orderPersona" name="persona">
+                <option>Curious</option>
+                <option>Greedy for green</option>
+                <option>Need-it-now</option>
+              </select>
             </label>
             <label>
               Email or Text Number
@@ -104,41 +182,207 @@
       </section>
 
       <aside class="ad-column right">
-        <article class="ad-card cool">
+        <article class="ad-card opportunity-card cool">
+          <div class="ad-signal"><span>Urgent Setup</span><strong>Fast Quote</strong></div>
           <p class="eyebrow">Targeted Ad</p>
-          <h2>Office Plant Boost</h2>
-          <p>Bring polished plant styling into offices, waiting rooms, and local Charlotte business spaces.</p>
+          <h2>Need-It-Now?</h2>
+          <p>Blank lobby, event deadline, new office, tired storefront: we bring the plant confidence and the setup plan.</p>
+          <div class="ad-route-line"><i></i><i></i><i></i></div>
         </article>
-        <article class="ad-card">
+        <article class="ad-card opportunity-card">
+          <div class="ad-signal"><span>Consulting</span><strong>Design Lane</strong></div>
           <p class="eyebrow">Quick Option</p>
-          <h2>Gift A Plant</h2>
-          <p>Use the in-page custom order flow for gifts, home staging, and “I need something beautiful today” orders.</p>
+          <h2>Visionary Setup</h2>
+          <p>Professional try: the rest still have not tried the best. Show design, layout, estimate, then install knowledge.</p>
+          <div class="ad-route-line"><i></i><i></i><i></i></div>
         </article>
       </aside>
     </main>
 
+    <section class="bot-route-section" aria-labelledby="bot-route-title">
+      <div class="bot-route-head">
+        <p class="eyebrow">Bot traffic router</p>
+        <h2 id="bot-route-title">Every delivery lead gets routed through marketplace, search, and Charlotte-local discovery.</h2>
+        <p>The bot path is simple: post the product lane, catch the search demand, send the customer back to one email/order action, then log the follow-up inside Dojj.</p>
+      </div>
+      <div class="bot-channel-grid">
+        <article>
+          <span>01 Marketplace</span>
+          <h3>Facebook Marketplace</h3>
+          <p>Post Monstera, bulk plant bundles, porch plants, office plants, and weekend pickup offers. Use Charlotte delivery in the title and photos from the product view.</p>
+          <div class="channel-actions">
+            <a href="https://www.facebook.com/marketplace/create/item" target="_blank" rel="noopener">Create listing</a>
+            <a href="https://www.facebook.com/help/561376580709359/" target="_blank" rel="noopener">Seller steps</a>
+          </div>
+        </article>
+        <article>
+          <span>02 Search</span>
+          <h3>Google Business Profile</h3>
+          <p>Add products, service areas, delivery wording, photos, and weekly posts so Charlotte plant buyers can find the business in Google Search and Maps.</p>
+          <div class="channel-actions">
+            <a href="https://business.google.com/us/business-profile/" target="_blank" rel="noopener">Google profile</a>
+            <a href="https://support.google.com/business/answer/6218037" target="_blank" rel="noopener">Add links</a>
+          </div>
+        </article>
+        <article>
+          <span>03 Search</span>
+          <h3>Bing Places</h3>
+          <p>Claim or create the Bing listing, match the Google details, add photos, and keep delivery/service links accurate for Bing and Bing Maps traffic.</p>
+          <div class="channel-actions">
+            <a href="https://www.bingplaces.com/Home" target="_blank" rel="noopener">Bing Places</a>
+            <a href="https://www.bingplaces.com/Dashboard/PerformSearch" target="_blank" rel="noopener">Find listing</a>
+          </div>
+        </article>
+        <article>
+          <span>04 Charlotte web</span>
+          <h3>Local Sites</h3>
+          <p>Use Charlotte farm/garden classifieds, neighborhood pages, and event/deal listings for tent sales, bulk plant weekends, and local pickup pushes.</p>
+          <div class="channel-actions">
+            <a href="https://charlotte.craigslist.org/search/gra?query=plants" target="_blank" rel="noopener">Craigslist plants</a>
+            <a href="https://business.nextdoor.com/en-us/local-1" target="_blank" rel="noopener">Nextdoor local</a>
+            <a href="https://www.charlotteonthecheap.com/contact/" target="_blank" rel="noopener">Submit event</a>
+          </div>
+        </article>
+      </div>
+      <a class="bot-route-mail" href="mailto:zzzanthony123@gmail.com?subject=PlantEscapes%20bot%20route%20stack&body=Bot%20route%20stack%20for%20delivery%20sales%0A%0AFacebook%20Marketplace%3A%20post%20current%20plant%20product%20and%20bulk%20bundle%0AGoogle%3A%20Business%20Profile%20products%2C%20posts%2C%20photos%2C%20service%20links%0ABing%3A%20Bing%20Places%20listing%2C%20photos%2C%20service%20links%0ACharlotte%20local%3A%20Craigslist%20farm%2Fgarden%2C%20Nextdoor%2C%20Charlotte%20On%20The%20Cheap%20event%20submission%0A%0ANext%20lead%20to%20route%3A%20%0APlant%3A%20%0AQuantity%3A%20%0ACity%3A%20%0AFollow-up%20owner%3A%20">Email the bot route stack</a>
+    </section>
+
     <section class="inventory-section" id="inventory">
       <div class="inventory-heading">
-        <p class="eyebrow">Available Inventory</p>
-        <h2>Alphabetized Plant List</h2>
-        <p id="inventorySummary">Loading plant inventory...</p>
+        <div>
+          <p class="eyebrow">Inventory shortcut</p>
+          <h2>Featured Plant Inventory</h2>
+        </div>
+        <div class="inventory-head-actions">
+          <p id="inventorySummary">Loading plant inventory...</p>
+          <a class="show-all-button" href="./inventory.html">Show All</a>
+        </div>
       </div>
       <div class="inventory-grid" id="inventoryGrid" aria-label="Alphabetized available plant inventory"></div>
     </section>
 
     <section class="seo-strip">
       <article>
-        <h3>Charlotte NC Custom Plant Orders</h3>
-        <p>PlantEscapes In Paradise is built for local Charlotte searches, local custom orders, and a cleaner path from product discovery to confirmed order.</p>
+        <h3>Charlotte NC Bulk Plant Orders</h3>
+        <p>PlantEscapes In Paradise is built for local Charlotte searches, bulk plant delivery, florist support, and a cleaner path from discovery to confirmed order.</p>
       </article>
       <article>
-        <h3>Why This Page Works</h3>
-        <p>One product stays front and center, the arrows keep browsing simple, and the order card is always right under the main plant view.</p>
+        <h3>Traffic Direction</h3>
+        <p>Unidirectional beam traffic sends buyers to one action. Omnidirectional discovery catches florists, offices, event people, homeowners, and market shoppers.</p>
       </article>
       <article>
-        <h3>Built For Local Discovery</h3>
-        <p>Charlotte-focused copy, local contact details, and targeted ad zones help the site rank for neighborhood and city-level plant searches.</p>
+        <h3>Clean Brand Umbrella</h3>
+        <p>Separate channels can protect identity and positioning, but the company should still use lawful names, correct permits, clean invoices, and honest customer-facing language.</p>
       </article>
+    </section>
+
+    <section class="business-os-section" aria-labelledby="business-os-title">
+      <div class="business-os-head">
+        <p class="eyebrow">Business operating system</p>
+        <h2 id="business-os-title">Legal-aware traffic, funny first contact, tent routes, consulting, and Dojj accountability.</h2>
+        <p>The system is built around Charlotte first: people who want plants delivered personally in bulk, florists that need reliable backup, and market shoppers who buy when the booth feels alive.</p>
+      </div>
+
+      <div class="beam-layout">
+        <article class="beam-card main-beam">
+          <span>Unidirectional beam</span>
+          <h3>One traffic direction: confirm the order.</h3>
+          <p>Every message points to one clean action: pick the plant, quantity, delivery lane, and contact method. No maze, no big-retailer energy, no "I'll think about it for three weeks" fog.</p>
+          <div class="beam-line" aria-hidden="true"><i></i><i></i><i></i></div>
+        </article>
+        <article class="beam-card">
+          <span>Omnidirectional discovery</span>
+          <h3>Catch traffic from every side.</h3>
+          <p>Florists, cut-flower sellers, office managers, home stagers, apartment communities, event planners, market shoppers, porch people, and "my lobby looks sad" callers all get routed into the same order funnel.</p>
+        </article>
+      </div>
+
+      <div class="persona-grid">
+        <article>
+          <span>Curious</span>
+          <h3>"Quick green question..."</h3>
+          <p>"If one plant could make your place look 30% more expensive by Friday, where would you put it?" Soft, funny, and easy to answer.</p>
+        </article>
+        <article>
+          <span>Greedy for green</span>
+          <h3>"Want the bulk advantage?"</h3>
+          <p>"You want the look without paying big-box chaos tax. Tell me the space, I'll tell you the plant lane." Playful, price-aware, still respectful.</p>
+        </article>
+        <article>
+          <span>Needy</span>
+          <h3>"Deadline rescue."</h3>
+          <p>"Event tomorrow? Lobby looking lonely? Porch giving empty grocery cart? We can build the plant answer and send the payment link after confirmation."</p>
+        </article>
+      </div>
+
+      <div class="delivery-bot-card">
+        <div>
+          <p class="eyebrow">Delivery bot coverage</p>
+          <h2>Charlotte is the center. The bot routes the lane.</h2>
+          <p>The delivery bot should qualify bulk plant requests by city, urgency, quantity, access, stairs/loading zone, delivery window, and whether the customer is residential, florist, office, event, or market pickup.</p>
+          <a class="bot-mail-link" href="mailto:zzzanthony123@gmail.com?subject=PlantEscapes%20bot%20qualified%20delivery%20lead&body=Qualified%20delivery%20lead%0A%0ACity%3A%20%0APlant%20request%3A%20%0AQuantity%3A%20%0AAccess%20%2F%20stairs%20%2F%20loading%3A%20%0ADelivery%20window%3A%20%0ACustomer%20type%3A%20Residential%20%2F%20Florist%20%2F%20Office%20%2F%20Event%20%2F%20Market%20pickup%0AChannel%20route%3A%20Facebook%20Marketplace%20%2B%20Google%20Business%20Profile%20%2B%20Bing%20Places%20%2B%20Charlotte%20local%20websites%0ADojj%20note%3A%20confirm%20cost%2C%20delivery%20fee%2C%20payment%20link%2C%20and%20follow-up.">Route bot lead to zzzanthony123@gmail.com</a>
+        </div>
+        <div class="coverage-map">
+          <span>Charlotte</span>
+          <span>Concord</span>
+          <span>Gastonia</span>
+          <span>Rock Hill</span>
+          <span>Fort Mill</span>
+          <span>Huntersville</span>
+          <span>Matthews</span>
+          <span>Virginia</span>
+          <span>Georgia</span>
+          <span>Tennessee</span>
+        </div>
+      </div>
+
+      <div class="consulting-card">
+        <div>
+          <p class="eyebrow">Consulting company lane</p>
+          <h2>Professional try: the rest still have not tried the best.</h2>
+          <p>We do it in three stages for interior and exterior plant setup: show the design, map the layout, then estimate the install. They have ambitions and dreams; we bring the vision into a plant plan they can actually buy.</p>
+        </div>
+        <ol>
+          <li><strong>Show Design</strong><span>Plant mood, scale, color, containers, and first impression.</span></li>
+          <li><strong>Layout</strong><span>Entry, lobby, porch, patio, restaurant corner, office wall, or event path.</span></li>
+          <li><strong>Estimate</strong><span>Plant count, delivery lane, install labor, refresh plan, and payment link.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="route-section" aria-labelledby="route-title">
+      <div class="business-os-head">
+        <p class="eyebrow">Flea market tent sales route</p>
+        <h2 id="route-title">Best first opportunities to test traffic, sell plants, and collect leads.</h2>
+        <p>Start close to Charlotte, then run weekend tests outward. Bring QR code cards, a short menu, three price bundles, a delivery signup sheet, and Dojj expense tracking for booth fee, mileage, plants sold, and follow-up orders.</p>
+      </div>
+      <div class="route-grid">
+        <article><span>01 Charlotte metro</span><h3>Uptown Flea / Victoria Yards</h3><p>Urban Saturday traffic for impulse plants, small containers, QR lead capture, and social proof.</p><a href="https://uptowncharlotte.com/do/uptown-flea" target="_blank" rel="noopener">Market info</a></article>
+        <article><span>02 Salisbury NC</span><h3>Webb Road Flea Market</h3><p>Strong low-cost test lane between Charlotte and Lexington with indoor/outdoor traffic and weekend rhythm.</p><a href="https://www.webbroadfleamarketnc.net/ABOUT.html" target="_blank" rel="noopener">Vendor info</a></article>
+        <article><span>03 Charlotte seasonal</span><h3>Charlotte AutoFair</h3><p>Big seasonal crowd. Good for bold tent branding, outdoor plants, and "take it home today" bundle pricing.</p><a href="https://www.charlotte-autofair.com/flea-market-information/" target="_blank" rel="noopener">Flea market info</a></article>
+        <article><span>04 Sophia NC</span><h3>311 Flea Market</h3><p>Weekend indoor/outdoor booths, produce shoppers, and practical buyers who understand plant value.</p><a href="https://311flea.com/" target="_blank" rel="noopener">Reserve route</a></article>
+        <article><span>05 Greensboro NC</span><h3>The Flea Greensboro</h3><p>Good second ring test with indoor space and outdoor tables for a bigger Saturday/Sunday run.</p><a href="https://www.thefleagreensboro.com/" target="_blank" rel="noopener">Vendor page</a></article>
+        <article><span>06 Belton SC</span><h3>Anderson Jockey Lot</h3><p>Large weekend market over 65 acres. Better for volume inventory, outdoor plants, and bargain-friendly bundles.</p><a href="https://www.jockeylot.com/" target="_blank" rel="noopener">Market site</a></article>
+        <article><span>07 Georgia I-85</span><h3>Jefferson Flea Market</h3><p>Georgia route near I-85 for plants, home goods traffic, and repeat weekend testing.</p><a href="https://jeffersonjunction.com/" target="_blank" rel="noopener">Market site</a></article>
+        <article><span>08 GA/TN line</span><h3>I-75 Flea Market</h3><p>Indoor/outdoor Georgia-Tennessee border stop for Chattanooga-area traffic and travel shoppers.</p><a href="https://www.i75fleamarket.com/" target="_blank" rel="noopener">Market site</a></article>
+        <article><span>09 Tennessee</span><h3>Nashville Flea Market</h3><p>Monthly high-recognition show with Marketspread vendor booking and large regional buyer flow.</p><a href="https://www.nashville.gov/departments/fairgrounds/services/apply-vendor-flea-market" target="_blank" rel="noopener">Apply as vendor</a></article>
+        <article><span>10 Virginia</span><h3>Double Tollgate / White Post</h3><p>Virginia route option for a bigger outcall trip: indoor/outdoor spaces and Shenandoah Valley shoppers.</p><a href="https://doubletollgate.com/about/" target="_blank" rel="noopener">Market info</a></article>
+      </div>
+    </section>
+
+    <section class="dojj-section" aria-labelledby="dojj-title">
+      <article class="dojj-card">
+        <p class="eyebrow">Dojj Personal AI Accountant System</p>
+        <h2 id="dojj-title">Money has to show where it goes, where it should not go, and who actually did something.</h2>
+        <p>Dojj is the checks-and-balances brain: it watches orders, booth fees, delivery mileage, plant cost, payment links, missing follow-up, and profit leaks. It gives credit for action, flags weird expenses, and keeps profit/loss control visible.</p>
+      </article>
+      <div class="dojj-grid">
+        <article><strong>Money In</strong><span>Confirmed orders, tent sales, bulk florist requests, consulting deposits.</span></article>
+        <article><strong>Money Out</strong><span>Inventory, booth fee, fuel, containers, soil, labor, delivery supplies.</span></article>
+        <article><strong>Not Supposed To Be There</strong><span>Duplicate costs, missing payment links, cash not logged, margin below target.</span></article>
+        <article><strong>Action Credit</strong><span>Calls made, orders closed, markets tested, estimates sent, follow-ups completed.</span></article>
+      </div>
+      <div id="dojjPublicHealth" class="public-health-card"></div>
     </section>
 
     <section class="reviews-section">
@@ -179,16 +423,44 @@
     </div>
   </div>
 
+  <div class="modal command-modal" id="factsCommandModal" hidden>
+    <div class="modal-card command-modal-card">
+      <button class="modal-close" data-close-command>&times;</button>
+      <div class="command-center-head">
+        <p class="eyebrow">Product Detail Center</p>
+        <h2 id="commandCenterPlant">Current plant</h2>
+        <p id="commandCenterSummary">Open a plant to see detailed facts, stock math, care logic, delivery route, sales angle, and Dojj margin notes.</p>
+      </div>
+      <div class="command-center-grid">
+        <article><span>Inventory</span><strong id="commandInventory">--</strong><p id="commandInventoryNote">--</p></article>
+        <article><span>Plant profile</span><strong id="commandIdentity">--</strong><p id="commandProfileNote">--</p></article>
+        <article><span>Light</span><strong id="commandLight">--</strong><p id="commandLightNote">--</p></article>
+        <article><span>Water</span><strong id="commandWater">--</strong><p id="commandWaterNote">--</p></article>
+        <article><span>Market fit</span><strong id="commandMarketFit">--</strong><p id="commandMarketNote">--</p></article>
+        <article><span>Risk watch</span><strong id="commandRisk">--</strong><p id="commandRiskNote">--</p></article>
+        <article><span>Delivery lane</span><strong id="commandBulk">--</strong><p id="commandDeliveryNote">--</p></article>
+        <article><span>Dojj margin</span><strong id="commandDojj">--</strong><p id="commandDojjNote">--</p></article>
+      </div>
+      <div class="command-center-script">
+        <span>Sales command line</span>
+        <p id="commandSalesLine">Pick a plant and the product detail center will build the sales angle.</p>
+        <a id="commandEmailLead" href="mailto:zzzanthony123@gmail.com">Email these facts</a>
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="settingsModal" hidden>
     <div class="modal-card">
       <button class="modal-close" data-close-settings>&times;</button>
       <h2>Page Settings</h2>
-      <p>This page is built for Charlotte custom orders first, with Florida bulk direct ordering marked as coming soon.</p>
+      <p>This page is built for Charlotte-centered bulk orders, florist outcalls, tent sales, consulting estimates, and clean Dojj money control.</p>
       <div class="settings-grid">
         <div class="summary-pill">Charlotte delivery coverage: active</div>
-        <div class="summary-pill">Florida bulk route: coming soon</div>
-        <div class="summary-pill">Custom order form: in-page</div>
-        <div class="summary-pill">Guest checkout memory: disabled</div>
+        <div class="summary-pill">Outcall beam: Charlotte to VA / GA / TN</div>
+        <div class="summary-pill">Florist and cut-flower support: active lane</div>
+        <div class="summary-pill">Flea market tent sales route: mapped</div>
+        <div class="summary-pill">Dojj checks and balances: admin page</div>
+        <div class="summary-pill">Clean brand umbrella: legal names, permits, honest invoices</div>
       </div>
     </div>
   </div>
@@ -221,6 +493,6 @@
     </div>
   </div>
 
-  <script src="./app.js"></script>
+  <script src="./app.js?v=20260506-ad-routes"></script>
 </body>
 </html>

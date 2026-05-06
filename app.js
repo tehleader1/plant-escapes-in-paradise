@@ -2,6 +2,10 @@ const STORAGE_KEY = "plantescapes_orders_v1";
 const REVIEWS_KEY = "plantescapes_reviews_v1";
 const ACCOUNT_KEY = "plantescapes_account_v1";
 const STOCK_PHOTO_CACHE_KEY = "plantescapes_stock_photos_v1";
+const DOJJ_HEALTH_KEY = "plantescapes_dojj_health_v1";
+const SALES_EMAIL = "zzzanthony123@gmail.com";
+const FEATURED_PLANT_NAME = "Monstera";
+const INVENTORY_PREVIEW_LIMIT = 12;
 
 function plantId(name, size = "") {
   return `${name}-${size}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -132,6 +136,16 @@ const PHOTO_SOURCE_STACK = [
   }
 ];
 
+const DEFAULT_STOCK_PHOTO_MAP = {
+  [plantKey("Monstera")]: {
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Indoor_Monstera_deliciosa.jpg/1280px-Indoor_Monstera_deliciosa.jpg",
+    sourceUrl: "https://commons.wikimedia.org/wiki/File:Indoor_Monstera_deliciosa.jpg",
+    provider: "Wikimedia Commons",
+    license: "CC BY-SA 4.0",
+    title: "Indoor Monstera deliciosa"
+  }
+};
+
 function stockPhotoQueryForName(name) {
   return CURATED_PLANT_IMAGE_MAP[plantKey(name)] || `${name} plant nursery`;
 }
@@ -204,6 +218,32 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function deliveryLeadMailto(order) {
+  const subject = `PlantEscapes delivery lead - ${order.plant || "plant order"}`;
+  const body = [
+    "New PlantEscapes delivery lead",
+    "",
+    `Plant: ${order.plant || ""}`,
+    `Quantity: ${order.quantity || ""}`,
+    `Lane: ${order.lane || order.routeType || ""}`,
+    `Contact mood: ${order.persona || "Curious"}`,
+    `Customer contact: ${order.contact || ""}`,
+    `Location: ${order.location || "Charlotte, NC"}`,
+    `Availability: ${order.price || ""}`,
+    `Notes: ${order.notes || ""}`,
+    `Created: ${order.createdAt || new Date().toLocaleString()}`,
+    "",
+    "Advertising route:",
+    "- Facebook Marketplace: plant product listing + bulk bundle",
+    "- Google: Business Profile product/post/service link",
+    "- Bing: Bing Places product/service listing",
+    "- Charlotte local websites: Craigslist farm/garden, Nextdoor, Charlotte deal/event listings",
+    "",
+    "Dojj check: confirm plant cost, delivery fee, payment link, and follow-up owner."
+  ].join("\n");
+  return `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 
 const RAW_PLANTS = [
@@ -303,23 +343,27 @@ const RAW_PLANTS = [
 ];
 
 const PLANTS = RAW_PLANTS
-  .map((plant) => ({
-    ...plant,
-    id: plantId(plant.name, plant.size),
-    category: plant.size === "Standard" ? "Landscape / Tropical" : plant.size,
-    price: `${plant.quantity} available`,
-    definition: `${plant.quantity} available - ${plant.size}${plant.measurement ? ` - ${plant.measurement}` : ""}. Ready for custom plant orders and local routing.`,
-    features: [
-      `${plant.quantity} in stock`,
-      plant.size || "Assorted size",
-      plant.measurement ? `Measured ${plant.measurement}` : "Picture included"
-    ],
-    stockQuery: stockPhotoQueryForName(plant.name),
-    image: plantPlaceholder(plant)
-  }))
+  .map((plant) => {
+    const defaultPhoto = DEFAULT_STOCK_PHOTO_MAP[plantKey(plant.name)];
+    return {
+      ...plant,
+      id: plantId(plant.name, plant.size),
+      category: plant.size === "Standard" ? "Landscape / Tropical" : plant.size,
+      price: `${plant.quantity} available`,
+      definition: `${plant.quantity} available - ${plant.size}${plant.measurement ? ` - ${plant.measurement}` : ""}. Ready for custom plant orders and local routing.`,
+      features: [
+        `${plant.quantity} in stock`,
+        plant.size || "Assorted size",
+        plant.measurement ? `Measured ${plant.measurement}` : "Real stock photo ready"
+      ],
+      stockQuery: stockPhotoQueryForName(plant.name),
+      defaultPhoto,
+      image: defaultPhoto?.src || plantPlaceholder(plant)
+    };
+  })
   .sort((a, b) => a.name.localeCompare(b.name) || a.size.localeCompare(b.size));
 
-let currentIndex = 0;
+let currentIndex = Math.max(0, PLANTS.findIndex((plant) => plant.name === FEATURED_PLANT_NAME));
 
 function getReviews() {
   try {
@@ -357,12 +401,30 @@ function saveOrders(orders) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
 }
 
+function getDojjClock() {
+  try {
+    const existing = JSON.parse(localStorage.getItem(DOJJ_HEALTH_KEY) || "null");
+    if (existing?.firstSeenAt) return existing;
+  } catch {
+    // Build a fresh health clock if storage is unavailable or corrupt.
+  }
+  const next = { firstSeenAt: Date.now(), lastRefreshAt: Date.now() };
+  localStorage.setItem(DOJJ_HEALTH_KEY, JSON.stringify(next));
+  return next;
+}
+
+function saveDojjClock(clock) {
+  localStorage.setItem(DOJJ_HEALTH_KEY, JSON.stringify(clock));
+}
+
 function currentPlant() {
   return PLANTS[currentIndex];
 }
 
 let stockPhotoCache = null;
 let catalogHydrationStarted = false;
+let currentCockpitMode = "facts";
+let cockpitThrottle = 68;
 const pendingStockPhotoRequests = new Map();
 
 function stockPhotoKey(plant) {
@@ -466,6 +528,7 @@ async function fetchOpenverseStockPhoto(query) {
 
 async function resolveStockPhoto(plant) {
   const key = stockPhotoKey(plant);
+  if (plant.defaultPhoto?.src) return { ...plant.defaultPhoto, query: freePhotoQuery(plant), resolvedAt: "default" };
   const cache = getStockPhotoCache();
   if (cache[key]?.src) return cache[key];
   if (pendingStockPhotoRequests.has(key)) return pendingStockPhotoRequests.get(key);
@@ -520,9 +583,13 @@ function applyCachedStockPhotos() {
   const seen = new Set();
   PLANTS.forEach((plant) => {
     const key = stockPhotoKey(plant);
-    if (seen.has(key) || !cache[key]?.src) return;
+    if (seen.has(key)) return;
     seen.add(key);
-    applyStockPhotoToCatalog(plant, cache[key]);
+    if (plant.defaultPhoto?.src) {
+      applyStockPhotoToCatalog(plant, plant.defaultPhoto);
+      return;
+    }
+    if (cache[key]?.src) applyStockPhotoToCatalog(plant, cache[key]);
   });
 }
 
@@ -551,7 +618,7 @@ function hydrateCatalogStockPhotos() {
 async function loadCuratedPhoto(img, plant) {
   if (!img || !plant) return;
   img.src = plant.image;
-  updateCurrentPhotoSource(plant, null);
+  updateCurrentPhotoSource(plant, plant.defaultPhoto || null);
   const photo = await resolveStockPhoto(plant);
   if (img.dataset.plantId === plant.id && photo) applyStockPhotoToCatalog(plant, photo);
 }
@@ -587,6 +654,186 @@ function bindCopySourceQuery(container, query) {
 
 function plantOrderLabel(plant) {
   return `${plant.name} (${plant.size}) - ${plant.quantity} available`;
+}
+
+function seededNumber(value) {
+  return String(value || "").split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+}
+
+function plantReadingProfile(plant) {
+  const seed = seededNumber(`${plant.name}-${plant.size}`);
+  const lower = String(plant.name || "").toLowerCase();
+  const quantity = Number(plant.quantity || 0);
+  const tropical = /palm|banana|alocasia|philodendron|monstera|hibiscus|croton|cordyline|ginger|aglaonema|spathiphyllum/.test(lower);
+  const tough = /sansevieria|zamia|cycas|ficus|schefflera|arboricola|podocarpus|viburnum/.test(lower);
+  const flowering = /hibiscus|iris|agapanthus|gardenia|crossandra|bottlebrush|crape|yellow elder|panama rose/.test(lower);
+  const light = flowering ? "bright / outdoor-friendly" : tropical ? "bright indirect" : tough ? "flexible light" : "filtered light";
+  const water = tropical ? "steady moisture" : tough ? "let top soil dry" : "moderate schedule";
+  const diseaseRisk = tough ? "low" : flowering ? "watch blooms / pests" : tropical ? "humidity watch" : "normal";
+  const marketFit = quantity >= 40 ? "bulk-ready" : quantity >= 10 ? "delivery-friendly" : "premium / limited";
+  const route = quantity >= 40
+    ? "Florist + office bulk route"
+    : quantity >= 10
+      ? "Charlotte personal delivery route"
+      : "limited feature plant route";
+  const readScore = Math.min(99, 86 + (seed % 12) + (quantity >= 40 ? 2 : 0));
+  const marginWatch = quantity >= 40 ? "bundle price lane" : quantity >= 10 ? "protect delivery fee" : "premium quote only";
+  const confidence = `${88 + (seed % 10)}%`;
+  const botScript = flowering
+    ? `Lead with color: "${plant.name} gives the space an instant flower moment. Want one statement piece or a bulk setup?"`
+    : tropical
+      ? `Lead with atmosphere: "${plant.name} makes the room feel alive fast. Want Charlotte delivery or a bulk plant lane?"`
+      : `Lead with reliability: "${plant.name} is a clean practical choice. Want me to match it to your light and delivery window?"`;
+  return {
+    identity: `${plant.name} / ${plant.size}`,
+    care: `${light} / ${water}`,
+    delivery: route,
+    confidence,
+    readScore: `${readScore}%`,
+    marketFit,
+    diseaseRisk,
+    marginWatch,
+    light,
+    water,
+    lightNote: flowering ? "Best for brighter placement and color visibility." : "Match placement before final quantity.",
+    waterNote: tropical ? "Do not let the delivery customer guess the first watering." : "Simple care instructions reduce returns.",
+    deliveryNote: `${quantity} available. ${route}.`,
+    bulk: marketFit,
+    botScript
+  };
+}
+
+function plantReadingMailto(plant, reading) {
+  const subject = `PlantEscapes product details - ${plant.name}`;
+  const body = [
+    "PlantEscapes product detail facts",
+    "",
+    `Plant: ${plant.name}`,
+    `Size: ${plant.size}`,
+    `Quantity: ${plant.quantity}`,
+    `Read score: ${reading.readScore}`,
+    `Identity: ${reading.identity}`,
+    `Care: ${reading.care}`,
+    `Disease risk: ${reading.diseaseRisk}`,
+    `Delivery route: ${reading.delivery}`,
+    `Dojj margin watch: ${reading.marginWatch}`,
+    "",
+    `Bot line: ${reading.botScript}`,
+    "",
+    "Send lead to: zzzanthony123@gmail.com"
+  ].join("\n");
+  return `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function setText(id, value) {
+  const node = document.getElementById(id);
+  if (node) node.textContent = value;
+}
+
+function cockpitSourceLine(plant) {
+  if (plant.defaultPhoto?.provider) return `${plant.defaultPhoto.provider} stock photo / ${plant.defaultPhoto.license}`;
+  return "Catalog stock source loading from Wikimedia or Openverse";
+}
+
+function cockpitModePayload(plant, reading) {
+  const quantity = Number(plant.quantity || 0);
+  const throttleText = `${cockpitThrottle}% delivery pressure`;
+  return {
+    facts: {
+      label: "Facts Mode",
+      headline: `${plant.name}: ${plant.quantity} in stock`,
+      body: `${plant.size}${plant.measurement ? ` / ${plant.measurement}` : ""}. ${reading.confidence} product confidence. ${cockpitSourceLine(plant)}.`,
+      progress: Math.min(100, 62 + Math.floor(quantity / 2))
+    },
+    care: {
+      label: "Care Mode",
+      headline: `${reading.light} + ${reading.water}`,
+      body: `${reading.lightNote} ${reading.waterNote} Give the customer a simple first-week care instruction so the delivery feels professional.`,
+      progress: reading.diseaseRisk === "low" ? 84 : 68
+    },
+    route: {
+      label: "Route Mode",
+      headline: reading.delivery,
+      body: `${throttleText}. Charlotte stays the beam; outbound orders qualify by quantity, access, delivery window, and urgency.`,
+      progress: Math.min(100, cockpitThrottle + (quantity >= 20 ? 8 : 0))
+    },
+    margin: {
+      label: "Margin Mode",
+      headline: reading.marginWatch,
+      body: `Dojj checks plant cost, fuel, container, labor, delivery fee, and payment-link status before the product leaves.`,
+      progress: reading.marketFit === "bulk-ready" ? 82 : reading.marketFit === "delivery-friendly" ? 74 : 58
+    },
+    sales: {
+      label: "Sales Mode",
+      headline: "Outcall line ready",
+      body: reading.botScript,
+      progress: Math.min(100, 70 + Math.floor(cockpitThrottle / 4))
+    }
+  };
+}
+
+function renderCockpitControls(plant, reading) {
+  const payload = cockpitModePayload(plant, reading);
+  const mode = payload[currentCockpitMode] || payload.facts;
+  setText("cockpitProductName", plant.name);
+  setText("cockpitPhotoSource", cockpitSourceLine(plant));
+  setText("cockpitThrottleValue", `${cockpitThrottle}%`);
+  setText("cockpitModeLabel", mode.label);
+  setText("cockpitModeHeadline", mode.headline);
+  setText("cockpitModeBody", mode.body);
+  const progress = document.getElementById("cockpitProgress");
+  if (progress) progress.style.width = `${mode.progress}%`;
+  document.querySelectorAll("[data-cockpit-mode]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.cockpitMode === currentCockpitMode);
+  });
+}
+
+function renderPlantReading(plant) {
+  const reading = plantReadingProfile(plant);
+  const inventoryLine = `${plant.quantity} available / ${plant.size}`;
+  const measurementLine = plant.measurement ? `Measured at ${plant.measurement}; quote delivery with space and doorway clearance in mind.` : "No physical measurement listed yet; confirm height, width, and container before final quote.";
+  const stockPosture = plant.quantity >= 40 ? "High-volume line ready for office, florist, or tent bundles." : plant.quantity >= 10 ? "Good delivery quantity for Charlotte orders and smaller bulk sets." : "Limited line; sell as a feature plant or premium add-on.";
+  const profileNote = `${plant.category} item. ${measurementLine}`;
+  const marketNote = reading.marketFit === "bulk-ready"
+    ? "Push bundle pricing, delivery fee, and fast close."
+    : reading.marketFit === "delivery-friendly"
+      ? "Good for personal delivery, small offices, and plant-pair offers."
+      : "Use scarcity and design value instead of discounting.";
+  const riskNote = `${reading.diseaseRisk}. Confirm leaf condition, soil moisture, and customer light before delivery.`;
+  const dojjNote = `${reading.marginWatch}. Dojj should verify plant cost, fuel, labor, container, and payment-link status before delivery.`;
+
+  renderCockpitControls(plant, reading);
+  setText("topCommandProduct", plant.name);
+  setText("topCommandStock", inventoryLine);
+  setText("topCommandCare", reading.care);
+  setText("topCommandRoute", reading.delivery);
+  setText("topCommandMarket", reading.marketFit);
+  setText("topCommandRisk", reading.diseaseRisk);
+  setText("topCommandSummary", `${plant.name} is the live product model: ${stockPosture} ${measurementLine}`);
+  setText("commandStock", inventoryLine);
+  setText("commandCare", reading.care);
+  setText("commandRoute", reading.delivery);
+  setText("commandCenterPlant", plant.name);
+  setText("commandCenterSummary", `${plant.name} is loaded with ${reading.confidence} product confidence, ${reading.marketFit} market fit, and ${stockPosture}`);
+  setText("commandInventory", inventoryLine);
+  setText("commandInventoryNote", stockPosture);
+  setText("commandIdentity", reading.identity);
+  setText("commandProfileNote", profileNote);
+  setText("commandLight", reading.light);
+  setText("commandLightNote", reading.lightNote);
+  setText("commandWater", reading.water);
+  setText("commandWaterNote", reading.waterNote);
+  setText("commandMarketFit", reading.marketFit);
+  setText("commandMarketNote", marketNote);
+  setText("commandRisk", reading.diseaseRisk);
+  setText("commandRiskNote", riskNote);
+  setText("commandBulk", reading.bulk);
+  setText("commandDeliveryNote", reading.deliveryNote);
+  setText("commandDojj", reading.marginWatch);
+  setText("commandDojjNote", dojjNote);
+  setText("commandSalesLine", reading.botScript);
+  const email = document.getElementById("commandEmailLead");
+  if (email) email.href = plantReadingMailto(plant, reading);
 }
 
 function renderPlantMenu() {
@@ -652,6 +899,7 @@ function renderPlant() {
     `;
     bindCopySourceQuery(freeLinks, sourceQuery);
   }
+  renderPlantReading(plant);
   renderPlantMenu();
   renderInventoryGrid();
 }
@@ -661,18 +909,23 @@ function renderInventoryGrid() {
   const summary = document.getElementById("inventorySummary");
   if (!grid) return;
   const totalPlants = PLANTS.reduce((sum, plant) => sum + plant.quantity, 0);
-  if (summary) summary.textContent = `${PLANTS.length} alphabetized line items - ${totalPlants} total plants available.`;
-  grid.innerHTML = PLANTS.map((plant, index) => `
+  const previewPlants = PLANTS.slice(0, INVENTORY_PREVIEW_LIMIT);
+  if (summary) summary.textContent = `Showing ${previewPlants.length} featured line items. Full inventory has ${PLANTS.length} line items and ${totalPlants} total plants.`;
+  grid.innerHTML = previewPlants.map((plant) => {
+    const index = PLANTS.findIndex((item) => item.id === plant.id);
+    return `
     <button class="inventory-card ${index === currentIndex ? "active" : ""}" type="button" data-inventory-index="${index}">
       <img src="${escapeHtml(plant.image)}" alt="${escapeHtml(plant.name)}" loading="lazy" data-stock-photo-key="${escapeHtml(stockPhotoKey(plant))}">
       <span>${escapeHtml(plant.price)}</span>
       <strong>${escapeHtml(plant.name)}</strong>
       <small>${escapeHtml(plant.size)}${plant.measurement ? ` - ${escapeHtml(plant.measurement)}` : ""}</small>
     </button>
-  `).join("");
+  `;
+  }).join("");
   grid.querySelectorAll("img").forEach((img) => {
     img.addEventListener("error", () => {
-      img.src = plant.image || plantPlaceholder(img.alt || "Plant");
+      const plant = PLANTS.find((item) => stockPhotoKey(item) === img.dataset.stockPhotoKey);
+      img.src = plant?.defaultPhoto?.src || plantPlaceholder(img.alt || "Plant");
     }, { once: true });
   });
   grid.querySelectorAll("[data-inventory-index]").forEach((button) => {
@@ -680,6 +933,54 @@ function renderInventoryGrid() {
       currentIndex = Number(button.dataset.inventoryIndex);
       renderPlant();
       document.querySelector(".hero-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+  applyCachedStockPhotos();
+  hydrateCatalogStockPhotos();
+}
+
+function inventoryCardMarkup(plant, index) {
+  return `
+    <button class="inventory-card full-inventory-card ${index === currentIndex ? "active" : ""}" type="button" data-inventory-index="${index}">
+      <img src="${escapeHtml(plant.image)}" alt="${escapeHtml(plant.name)}" loading="lazy" data-stock-photo-key="${escapeHtml(stockPhotoKey(plant))}">
+      <span>${escapeHtml(plant.price)}</span>
+      <strong>${escapeHtml(plant.name)}</strong>
+      <small>${escapeHtml(plant.size)}${plant.measurement ? ` - ${escapeHtml(plant.measurement)}` : ""}</small>
+      <em>${escapeHtml(plant.category)}</em>
+    </button>
+  `;
+}
+
+function renderFullInventoryPage(filter = "") {
+  const grid = document.getElementById("fullInventoryGrid");
+  const summary = document.getElementById("fullInventorySummary");
+  if (!grid) return;
+  const query = filter.trim().toLowerCase();
+  const totalPlants = PLANTS.reduce((sum, plant) => sum + plant.quantity, 0);
+  const filteredPlants = PLANTS
+    .map((plant, index) => ({ plant, index }))
+    .filter(({ plant }) => {
+      if (!query) return true;
+      return [plant.name, plant.size, plant.measurement, plant.category]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    });
+  if (summary) {
+    summary.textContent = query
+      ? `${filteredPlants.length} matching line items from ${PLANTS.length}; ${totalPlants} total plants in the complete catalog.`
+      : `${PLANTS.length} alphabetized line items; ${totalPlants} total plants available.`;
+  }
+  grid.innerHTML = filteredPlants.map(({ plant, index }) => inventoryCardMarkup(plant, index)).join("");
+  grid.querySelectorAll("img").forEach((img) => {
+    img.addEventListener("error", () => {
+      const plant = PLANTS.find((item) => stockPhotoKey(item) === img.dataset.stockPhotoKey);
+      img.src = plant?.defaultPhoto?.src || plantPlaceholder(img.alt || "Plant");
+    }, { once: true });
+  });
+  grid.querySelectorAll("[data-inventory-index]").forEach((button) => {
+    button.addEventListener("click", () => {
+      localStorage.setItem("plantescapes_featured_plant_index", button.dataset.inventoryIndex);
+      window.location.href = "./index.html";
     });
   });
   applyCachedStockPhotos();
@@ -695,6 +996,8 @@ function submitOrder(event) {
   event.preventDefault();
   const plant = currentPlant();
   const quantity = document.getElementById("orderQuantity").value;
+  const lane = document.getElementById("orderLane")?.value || "Charlotte bulk delivery";
+  const persona = document.getElementById("orderPersona")?.value || "Curious";
   const contact = document.getElementById("orderContact").value.trim();
   const notes = document.getElementById("orderNotes").value.trim();
   const status = document.getElementById("orderStatus");
@@ -706,7 +1009,7 @@ function submitOrder(event) {
   }
 
   const orders = getOrders();
-  orders.unshift({
+  const order = {
     id: `PEIP-${Date.now()}`,
     plant: plant.name,
     category: plant.category,
@@ -714,12 +1017,16 @@ function submitOrder(event) {
     quantity,
     contact,
     notes,
-    location: "Charlotte, NC",
-    routeType: "charlotte-custom",
+    location: lane.includes("Virginia") ? "Charlotte outbound: VA / GA / TN" : "Charlotte, NC",
+    routeType: lane.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+    lane,
+    persona,
     status: "new",
     createdAt: new Date().toLocaleString()
-  });
+  };
+  orders.unshift(order);
   saveOrders(orders);
+  refreshDojjHealth();
   if (account.provider && account.provider !== "Guest") {
     account.history = [
       { plant: plant.name, price: plant.price, quantity, createdAt: new Date().toLocaleString() },
@@ -729,16 +1036,21 @@ function submitOrder(event) {
     renderRememberedOrders();
   }
 
-  status.textContent = `Custom order saved for ${plant.name}. We will follow up with the payment credit-card page when the order is ready to send.`;
+  const mailto = deliveryLeadMailto(order);
+  status.innerHTML = `Custom order saved for ${escapeHtml(plant.name)}. <a href="${escapeHtml(mailto)}">Send this delivery lead to ${SALES_EMAIL}</a>.`;
   event.target.reset();
   document.getElementById("orderPlant").value = plantOrderLabel(plant);
   document.getElementById("orderQuantity").value = 1;
+  const laneInput = document.getElementById("orderLane");
+  const personaInput = document.getElementById("orderPersona");
+  if (laneInput) laneInput.value = "Charlotte bulk delivery";
+  if (personaInput) personaInput.value = "Curious";
 }
 
 function saveFloridaBulkRequest() {
   const plant = currentPlant();
   const orders = getOrders();
-  orders.unshift({
+  const order = {
     id: `PEIP-FL-${Date.now()}`,
     plant: plant.name,
     category: plant.category,
@@ -748,13 +1060,18 @@ function saveFloridaBulkRequest() {
     notes: "Florida bulk direct order lane requested from the homepage.",
     location: "Florida Bulk",
     routeType: "florida-bulk-coming-soon",
+    lane: "Florida bulk direct order",
+    persona: "Greedy for green",
     status: "coming-soon",
     createdAt: new Date().toLocaleString()
-  });
+  };
+  orders.unshift(order);
   saveOrders(orders);
+  refreshDojjHealth();
   const status = document.getElementById("orderStatus");
   if (status) {
-    status.textContent = `${plant.name} has been marked for the Florida Bulk direct-order lane. We will add the direct supplier information next.`;
+    const mailto = deliveryLeadMailto(order);
+    status.innerHTML = `${escapeHtml(plant.name)} has been marked for the Florida Bulk direct-order lane. <a href="${escapeHtml(mailto)}">Email this bulk lead to ${SALES_EMAIL}</a>.`;
   }
 }
 
@@ -793,12 +1110,157 @@ function renderAdminPage() {
       <p><strong>Contact:</strong> ${escapeHtml(order.contact)}</p>
       <p><strong>Availability:</strong> ${escapeHtml(order.price)}</p>
       <p><strong>Location:</strong> ${escapeHtml(order.location)}</p>
+      <p><strong>Lane:</strong> ${escapeHtml(order.lane || order.routeType || "Charlotte custom")}</p>
+      <p><strong>Contact Mood:</strong> ${escapeHtml(order.persona || "Curious")}</p>
       <p><strong>Route Type:</strong> ${escapeHtml(order.routeType || "charlotte-custom")}</p>
       <p><strong>Placed:</strong> ${escapeHtml(order.createdAt)}</p>
       <p><strong>Notes:</strong> ${escapeHtml(order.notes || "No extra notes.")}</p>
       <p><strong>Status:</strong> ${escapeHtml(order.status)}</p>
+      <p><a href="${escapeHtml(deliveryLeadMailto(order))}">Email lead to ${SALES_EMAIL}</a></p>
     </article>
   `).join("");
+}
+
+function renderDojjPanel() {
+  const summary = document.getElementById("dojjSummary");
+  const checks = document.getElementById("dojjChecks");
+  if (!summary || !checks) return;
+
+  const orders = getOrders();
+  const health = computeCompanyHealth(orders);
+
+  summary.innerHTML = `
+    <div class="summary-pill">Action Credit: ${health.actionCredit} points</div>
+    <div class="summary-pill">Money Direction: ${orders.length ? "orders moving" : "waiting for first close"}</div>
+    <div class="summary-pill">Plants In Motion: ${health.totalPlants}</div>
+    <div class="summary-pill">Follow-Ups Needed: ${health.followUpNeeded}</div>
+    <div class="summary-pill">Bulk Signals: ${health.bulkSignals}</div>
+  `;
+  renderCompanyHealthCard("companyHealthSummary", health, true);
+
+  const checksList = [
+    {
+      title: "Money In",
+      body: orders.length
+        ? `${orders.length} order signals are logged. Send payment links only after confirming plant count, delivery window, and final price.`
+        : "No order money yet. First job: turn one curious visitor into a confirmed text/email lead."
+    },
+    {
+      title: "Money Out",
+      body: "Track plant cost, container cost, soil, tent fee, fuel, labor, and market snacks separately so profit does not quietly walk away."
+    },
+    {
+      title: "Not Supposed To Be There",
+      body: health.leakFlags.length ? health.leakFlags.join(" | ") : "No obvious local-storage leaks yet. Keep logging every cash sale and delivery expense."
+    },
+    {
+      title: "Next Best Action",
+      body: health.openOrders
+        ? "Call or text every open order today with a cheerful confirmation and payment-link timeline."
+        : "Run the Curious / Deal Hunter / Need-It-Now script against florists, offices, and market vendor leads."
+    }
+  ];
+
+  checks.innerHTML = checksList.map((item) => `
+    <article class="order-item">
+      <h3>${escapeHtml(item.title)}</h3>
+      <p>${escapeHtml(item.body)}</p>
+    </article>
+  `).join("");
+}
+
+function minutesSince(value) {
+  const time = Date.parse(value || "");
+  if (!Number.isFinite(time)) return 0;
+  return Math.max(0, Math.floor((Date.now() - time) / 60000));
+}
+
+function computeCompanyHealth(orders = getOrders()) {
+  const clock = getDojjClock();
+  clock.lastRefreshAt = Date.now();
+  saveDojjClock(clock);
+  const numericOrders = orders
+    .map((order) => Number(order.quantity || 0))
+    .filter((quantity) => Number.isFinite(quantity) && quantity > 0);
+  const totalPlants = numericOrders.reduce((sum, quantity) => sum + quantity, 0);
+  const openOrders = orders.filter((order) => order.status === "new").length;
+  const comingSoon = orders.filter((order) => order.status === "coming-soon").length;
+  const bulkSignals = orders.filter((order) => String(order.routeType || "").includes("bulk") || String(order.lane || "").toLowerCase().includes("bulk")).length;
+  const followUpNeeded = openOrders + comingSoon;
+  const longestOpenMinutes = Math.max(0, ...orders
+    .filter((order) => order.status === "new" || order.status === "coming-soon")
+    .map((order) => minutesSince(order.createdAt)));
+  const watchedMinutes = Math.max(0, Math.floor((Date.now() - Number(clock.firstSeenAt || Date.now())) / 60000));
+  const actionCredit = orders.length * 10 + totalPlants * 2 + bulkSignals * 15;
+  const leakFlags = [
+    ...orders.filter((order) => !String(order.contact || "").trim()).map((order) => `${order.plant}: missing contact`),
+    ...orders.filter((order) => !String(order.notes || "").trim()).slice(0, 3).map((order) => `${order.plant}: no space or delivery notes yet`),
+    ...orders.filter((order) => order.status === "coming-soon").map((order) => `${order.plant}: bulk lane requested but supplier lane not finished`),
+    ...(longestOpenMinutes > 1440 ? [`Open lead aging ${Math.floor(longestOpenMinutes / 60)} hours without close`] : [])
+  ];
+  const timeDrag = orders.length ? Math.min(14, Math.floor(longestOpenMinutes / 240)) : Math.min(10, Math.floor(watchedMinutes / 60));
+  const score = Math.max(18, Math.min(100, Math.round(
+    38 +
+    orders.length * 7 +
+    totalPlants * 0.85 +
+    bulkSignals * 7 -
+    followUpNeeded * 3 -
+    leakFlags.length * 4 -
+    timeDrag
+  )));
+  const status = score >= 82 ? "Healthy growth lane" : score >= 62 ? "Building traction" : score >= 42 ? "Needs follow-up pressure" : "Launch mode: get leads moving";
+  const mode = followUpNeeded ? "follow-up clock active" : orders.length ? "traffic expansion clock active" : "prospecting clock active";
+  const risk = leakFlags.length ? "Watch leaks and missing details" : followUpNeeded ? "Follow-up load is the main risk" : "Clean enough to push ads harder";
+  const summary = orders.length
+    ? `Dojj sees ${orders.length} order signal${orders.length === 1 ? "" : "s"}, ${totalPlants} plants in motion, ${bulkSignals} bulk signal${bulkSignals === 1 ? "" : "s"}, and ${followUpNeeded} follow-up item${followUpNeeded === 1 ? "" : "s"}. The company is in ${mode}.`
+    : `Dojj sees a clean launch board but not enough sales proof yet. The company is in ${mode} after ${watchedMinutes} watched minute${watchedMinutes === 1 ? "" : "s"}.`;
+  const nextMove = followUpNeeded
+    ? "Convert every open lead into a confirmed delivery window, then send the payment link."
+    : orders.length
+      ? "Increase traffic: florist outcalls, office plant offers, and weekend tent signup cards."
+      : "Start with 20 Charlotte outcalls and one flea-market booth test, then log every result.";
+  return {
+    score,
+    status,
+    mode,
+    risk,
+    summary,
+    nextMove,
+    totalPlants,
+    openOrders,
+    bulkSignals,
+    followUpNeeded,
+    actionCredit,
+    leakFlags,
+    watchedMinutes,
+    longestOpenMinutes,
+    refreshedAt: new Date(clock.lastRefreshAt).toLocaleTimeString()
+  };
+}
+
+function renderCompanyHealthCard(id, health = computeCompanyHealth(), detailed = false) {
+  const node = document.getElementById(id);
+  if (!node) return;
+  node.innerHTML = `
+    <span>Dojj company health</span>
+    <strong>${health.score}/100 - ${escapeHtml(health.status)}</strong>
+    <p>${escapeHtml(health.summary)}</p>
+    <p><b>Risk:</b> ${escapeHtml(health.risk)}</p>
+    <p><b>Next move:</b> ${escapeHtml(health.nextMove)}</p>
+    <small>Live refresh: ${escapeHtml(health.refreshedAt)} / ${escapeHtml(health.mode)}</small>
+    ${detailed ? `<div class="health-bars"><i style="width:${health.score}%"></i></div>` : ""}
+  `;
+}
+
+function refreshDojjHealth() {
+  const health = computeCompanyHealth();
+  renderCompanyHealthCard("companyHealthSummary", health, true);
+  renderCompanyHealthCard("dojjPublicHealth", health, false);
+}
+
+function startDojjHealthTicker() {
+  refreshDojjHealth();
+  window.setInterval(refreshDojjHealth, 15000);
 }
 
 function renderReviews() {
@@ -865,12 +1327,28 @@ function submitReview(event) {
 }
 
 function initHomePage() {
+  const savedIndexValue = localStorage.getItem("plantescapes_featured_plant_index");
+  const savedIndex = savedIndexValue === null ? NaN : Number(savedIndexValue);
+  if (Number.isInteger(savedIndex) && PLANTS[savedIndex]) {
+    currentIndex = savedIndex;
+    localStorage.removeItem("plantescapes_featured_plant_index");
+  }
   renderPlant();
   renderReviews();
   renderRememberedOrders();
   bindLoginButtons();
   document.getElementById("prevPlant")?.addEventListener("click", () => changePlant(-1));
   document.getElementById("nextPlant")?.addEventListener("click", () => changePlant(1));
+  document.querySelectorAll("[data-cockpit-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      currentCockpitMode = button.dataset.cockpitMode || "facts";
+      renderPlantReading(currentPlant());
+    });
+  });
+  document.getElementById("cockpitThrottle")?.addEventListener("input", (event) => {
+    cockpitThrottle = Number(event.target.value || 68);
+    renderPlantReading(currentPlant());
+  });
   document.getElementById("orderForm")?.addEventListener("submit", submitOrder);
   document.getElementById("contactButton")?.addEventListener("click", () => toggleContactModal(true));
   document.querySelector("[data-close-modal]")?.addEventListener("click", () => toggleContactModal(false));
@@ -895,11 +1373,30 @@ function initHomePage() {
     document.getElementById("orderForm")?.scrollIntoView({ behavior: "smooth", block: "center" });
     document.getElementById("orderQuantity")?.focus();
   });
+  document.getElementById("openCommandCenterButton")?.addEventListener("click", () => openModal("factsCommandModal", true));
+  document.getElementById("topOpenCommandCenterButton")?.addEventListener("click", () => openModal("factsCommandModal", true));
+  document.querySelector("[data-close-command]")?.addEventListener("click", () => openModal("factsCommandModal", false));
+  document.getElementById("factsCommandModal")?.addEventListener("click", (event) => {
+    if (event.target.id === "factsCommandModal") openModal("factsCommandModal", false);
+  });
   document.getElementById("floridaBulkButton")?.addEventListener("click", saveFloridaBulkRequest);
   document.getElementById("adminOpenButton")?.addEventListener("click", () => {
     window.location.href = "./admin.html";
   });
 }
 
+function initFullInventoryPage() {
+  renderFullInventoryPage();
+  const search = document.getElementById("inventorySearch");
+  search?.addEventListener("input", () => renderFullInventoryPage(search.value));
+}
+
 if (document.getElementById("orderForm")) initHomePage();
-if (document.getElementById("ordersList")) renderAdminPage();
+if (document.getElementById("fullInventoryGrid")) initFullInventoryPage();
+if (document.getElementById("ordersList")) {
+  renderAdminPage();
+  renderDojjPanel();
+}
+if (document.getElementById("companyHealthSummary") || document.getElementById("dojjPublicHealth")) {
+  startDojjHealthTicker();
+}
