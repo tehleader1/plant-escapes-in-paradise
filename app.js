@@ -240,6 +240,7 @@ function deliveryLeadMailto(order) {
     "- Google: Business Profile product/post/service link",
     "- Bing: Bing Places product/service listing",
     "- Charlotte local websites: Craigslist farm/garden, Nextdoor, Charlotte deal/event listings",
+    "- Free no-business-profile ad drops: Craigslist Charlotte, Locanto, LSN, Geebo, Oodle, FreeAdsTime, FreeClassiPress, RealFreeWeb, Charlotte On The Cheap event/deal submission",
     "",
     "Dojj check: confirm plant cost, delivery fee, payment link, and follow-up owner."
   ].join("\n");
