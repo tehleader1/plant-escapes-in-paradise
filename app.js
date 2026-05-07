@@ -4,8 +4,24 @@ const ACCOUNT_KEY = "plantescapes_account_v1";
 const STOCK_PHOTO_CACHE_KEY = "plantescapes_stock_photos_v1";
 const DOJJ_HEALTH_KEY = "plantescapes_dojj_health_v1";
 const SALES_EMAIL = "zzzanthony123@gmail.com";
+const DOJJ_BOT_BASELINE_MINUTES = 1961;
 const FEATURED_PLANT_NAME = "Monstera";
 const INVENTORY_PREVIEW_LIMIT = 12;
+
+const PLANT_BOT_AD_ROUTES = [
+  "Facebook Marketplace: bulk plant bundle listing for florists, landscapers, offices, and event decorators",
+  "Google: Business Profile bulk delivery service post for florist restock, landscaper fill-in, and office/lobby packages",
+  "Bing: Bing Places bulk plant delivery service listing for florists and landscapers",
+  "Charlotte local websites: Craigslist farm/garden bulk bundle, Nextdoor office/lobby post, florist/landscaper trade posts, Charlotte deal/event listings",
+  "Free no-business-profile ad drops: Craigslist Charlotte, Locanto, LSN, Geebo, Oodle, FreeAdsTime, FreeClassiPress, RealFreeWeb, Charlotte On The Cheap event/deal submission"
+];
+const PLANT_WEBSITE_HEALTH_WATCH = [
+  "DNS + SSL: confirm www.theplantmaninc.com and theplantmaninc.com resolve and keep the certificate active",
+  "Lead safety: flag empty contacts, repeated spam notes, strange bulk requests, and fake payment-link replies",
+  "Inventory integrity: watch for missing product pictures, copied catalog pages, and broken stock-photo links",
+  "Traffic quality: separate real Charlotte bulk leads from scraper traffic, bot noise, and bad referral bursts"
+];
+const LASERSMARKET_PREMIUM_ROUTE = "LasersMarket Premium $25,000 signal review route: direct calls welcome at 980-230-6202 for local stock, forex, crypto, and options investors; research-only, no guaranteed returns, no automatic trades.";
 
 function plantId(name, size = "") {
   return `${name}-${size}`.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -235,14 +251,24 @@ function deliveryLeadMailto(order) {
     `Notes: ${order.notes || ""}`,
     `Created: ${order.createdAt || new Date().toLocaleString()}`,
     "",
-    "Advertising route:",
-    "- Facebook Marketplace: plant product listing + bulk bundle",
-    "- Google: Business Profile product/post/service link",
-    "- Bing: Bing Places product/service listing",
-    "- Charlotte local websites: Craigslist farm/garden, Nextdoor, Charlotte deal/event listings",
-    "- Free no-business-profile ad drops: Craigslist Charlotte, Locanto, LSN, Geebo, Oodle, FreeAdsTime, FreeClassiPress, RealFreeWeb, Charlotte On The Cheap event/deal submission",
+    "Bot priority:",
+    "Mostly bulk sales. Aim first at florists and landscapers, then offices, event decorators, property managers, and route-fill personal deliveries.",
     "",
-    "Dojj check: confirm plant cost, delivery fee, payment link, and follow-up owner."
+    "Dojj launch health:",
+    "28/100 - Launch mode: get leads moving",
+    "Risk: Clean enough to push ads harder",
+    "Next move: Start with 20 Charlotte bulk outcalls to florists and landscapers, then one flea-market booth test, then log every result.",
+    "",
+    "Advertising route:",
+    ...PLANT_BOT_AD_ROUTES.map((route) => `- ${route}`),
+    "",
+    "Website health / hacker watch:",
+    ...PLANT_WEBSITE_HEALTH_WATCH.map((route) => `- ${route}`),
+    "",
+    "Cross-site premium ad route:",
+    `- ${LASERSMARKET_PREMIUM_ROUTE}`,
+    "",
+    "Dojj bot check: confirm bulk plant count, delivery fee, payment link, buyer type, and follow-up owner."
   ].join("\n");
   return `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
@@ -673,9 +699,9 @@ function plantReadingProfile(plant) {
   const diseaseRisk = tough ? "low" : flowering ? "watch blooms / pests" : tropical ? "humidity watch" : "normal";
   const marketFit = quantity >= 40 ? "bulk-ready" : quantity >= 10 ? "delivery-friendly" : "premium / limited";
   const route = quantity >= 40
-    ? "Florist + office bulk route"
+    ? "Florist + landscaper bulk route"
     : quantity >= 10
-      ? "Charlotte personal delivery route"
+      ? "Charlotte bulk-friendly delivery route"
       : "limited feature plant route";
   const readScore = Math.min(99, 86 + (seed % 12) + (quantity >= 40 ? 2 : 0));
   const marginWatch = quantity >= 40 ? "bundle price lane" : quantity >= 10 ? "protect delivery fee" : "premium quote only";
@@ -1136,6 +1162,7 @@ function renderDojjPanel() {
     <div class="summary-pill">Plants In Motion: ${health.totalPlants}</div>
     <div class="summary-pill">Follow-Ups Needed: ${health.followUpNeeded}</div>
     <div class="summary-pill">Bulk Signals: ${health.bulkSignals}</div>
+    <div class="summary-pill">Bot Push: ${escapeHtml(health.botPush)}</div>
   `;
   renderCompanyHealthCard("companyHealthSummary", health, true);
 
@@ -1158,7 +1185,7 @@ function renderDojjPanel() {
       title: "Next Best Action",
       body: health.openOrders
         ? "Call or text every open order today with a cheerful confirmation and payment-link timeline."
-        : "Run the Curious / Deal Hunter / Need-It-Now script against florists, offices, and market vendor leads."
+        : "Run the bulk bot first: 20 Charlotte outcalls to florists and landscapers, then office plant offers, then the flea-market booth test."
     }
   ];
 
@@ -1191,7 +1218,7 @@ function computeCompanyHealth(orders = getOrders()) {
   const longestOpenMinutes = Math.max(0, ...orders
     .filter((order) => order.status === "new" || order.status === "coming-soon")
     .map((order) => minutesSince(order.createdAt)));
-  const watchedMinutes = Math.max(0, Math.floor((Date.now() - Number(clock.firstSeenAt || Date.now())) / 60000));
+  const watchedMinutes = Math.max(DOJJ_BOT_BASELINE_MINUTES, Math.floor((Date.now() - Number(clock.firstSeenAt || Date.now())) / 60000));
   const actionCredit = orders.length * 10 + totalPlants * 2 + bulkSignals * 15;
   const leakFlags = [
     ...orders.filter((order) => !String(order.contact || "").trim()).map((order) => `${order.plant}: missing contact`),
@@ -1200,7 +1227,7 @@ function computeCompanyHealth(orders = getOrders()) {
     ...(longestOpenMinutes > 1440 ? [`Open lead aging ${Math.floor(longestOpenMinutes / 60)} hours without close`] : [])
   ];
   const timeDrag = orders.length ? Math.min(14, Math.floor(longestOpenMinutes / 240)) : Math.min(10, Math.floor(watchedMinutes / 60));
-  const score = Math.max(18, Math.min(100, Math.round(
+  const computedScore = Math.max(18, Math.min(100, Math.round(
     38 +
     orders.length * 7 +
     totalPlants * 0.85 +
@@ -1209,6 +1236,7 @@ function computeCompanyHealth(orders = getOrders()) {
     leakFlags.length * 4 -
     timeDrag
   )));
+  const score = orders.length ? computedScore : 28;
   const status = score >= 82 ? "Healthy growth lane" : score >= 62 ? "Building traction" : score >= 42 ? "Needs follow-up pressure" : "Launch mode: get leads moving";
   const mode = followUpNeeded ? "follow-up clock active" : orders.length ? "traffic expansion clock active" : "prospecting clock active";
   const risk = leakFlags.length ? "Watch leaks and missing details" : followUpNeeded ? "Follow-up load is the main risk" : "Clean enough to push ads harder";
@@ -1218,8 +1246,8 @@ function computeCompanyHealth(orders = getOrders()) {
   const nextMove = followUpNeeded
     ? "Convert every open lead into a confirmed delivery window, then send the payment link."
     : orders.length
-      ? "Increase traffic: florist outcalls, office plant offers, and weekend tent signup cards."
-      : "Start with 20 Charlotte outcalls and one flea-market booth test, then log every result.";
+      ? "Push florist and landscaper bulk follow-ups first, then office plant offers and weekend tent signup cards."
+      : "Start with 20 Charlotte bulk outcalls to florists and landscapers, then one flea-market booth test, then log every result.";
   return {
     score,
     status,
@@ -1227,6 +1255,12 @@ function computeCompanyHealth(orders = getOrders()) {
     risk,
     summary,
     nextMove,
+    botPush: "Push bulk ads harder",
+    primaryBuyers: "Florists and landscapers first; offices, event decorators, and property managers second; single deliveries only as route filler.",
+    trafficBot: "Bulk-first traffic bot is pointed at Charlotte florists and landscapers, then offices/events, then route-fill personal deliveries.",
+    websiteHealth: "Dojj watches DNS/SSL, redirect safety, missing images, form abuse, fake payment replies, and strange bot/referral spikes.",
+    hackerWatch: PLANT_WEBSITE_HEALTH_WATCH.join(" | "),
+    premiumRoute: LASERSMARKET_PREMIUM_ROUTE,
     totalPlants,
     openOrders,
     bulkSignals,
@@ -1247,6 +1281,11 @@ function renderCompanyHealthCard(id, health = computeCompanyHealth(), detailed =
     <strong>${health.score}/100 - ${escapeHtml(health.status)}</strong>
     <p>${escapeHtml(health.summary)}</p>
     <p><b>Risk:</b> ${escapeHtml(health.risk)}</p>
+    <p><b>Bot push:</b> ${escapeHtml(health.botPush)}</p>
+    <p><b>Bulk buyers:</b> ${escapeHtml(health.primaryBuyers)}</p>
+    <p><b>Traffic bot:</b> ${escapeHtml(health.trafficBot)}</p>
+    <p><b>Website health:</b> ${escapeHtml(health.websiteHealth)}</p>
+    <p><b>Premium route:</b> ${escapeHtml(health.premiumRoute)}</p>
     <p><b>Next move:</b> ${escapeHtml(health.nextMove)}</p>
     <small>Live refresh: ${escapeHtml(health.refreshedAt)} / ${escapeHtml(health.mode)}</small>
     ${detailed ? `<div class="health-bars"><i style="width:${health.score}%"></i></div>` : ""}
