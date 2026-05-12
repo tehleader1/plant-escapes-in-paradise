@@ -1490,3 +1490,131 @@ function sequenceLoadEqualizer(inventory) {
 
 }
 
+
+function calculateLoadBalanceReport(inventory) {
+
+  const totalStock = inventory.reduce((sum, plant) => {
+    return sum + Number(plant.quantity || 0);
+  }, 0);
+
+  const targetStock = 100;
+
+  const sellAmount = Math.max(totalStock - targetStock, 0);
+
+  const sortedPlants = [...inventory]
+    .sort((a, b) => {
+      return Number(b.quantity || 0) - Number(a.quantity || 0);
+    });
+
+  return {
+
+    totalStock,
+
+    targetStock,
+
+    sellAmount,
+
+    priority: sortedPlants.map((plant) => {
+
+      const quantity = Number(plant.quantity || 0);
+
+      const suggestedSell =
+        Math.max(
+          Math.floor(quantity * 0.25),
+          1
+        );
+
+      return {
+
+        name: plant.name,
+
+        quantity,
+
+        suggestedSell,
+
+        category: plant.category || "General"
+
+      };
+
+    })
+
+  };
+
+}
+
+
+const dojjLoadReport = calculateLoadBalanceReport(PLANTS);
+
+console.log("Dojj Load Balance Report", dojjLoadReport);
+
+const reportHtml = `
+  <div style="
+    background:#111827;
+    padding:20px;
+    border-radius:16px;
+    margin-top:20px;
+    border:1px solid rgba(255,255,255,0.08);
+  ">
+
+    <h3 style="margin-bottom:10px;">
+      Dojj Load Balance Report
+    </h3>
+
+    <p>
+      Current Inventory:
+      ${dojjLoadReport.totalStock} plants
+    </p>
+
+    <p>
+      Target Remaining:
+      ${dojjLoadReport.targetStock} plants
+    </p>
+
+    <p>
+      Suggested Sales Load:
+      ${dojjLoadReport.sellAmount} plants
+    </p>
+
+    <div style="margin-top:20px;">
+
+      ${
+        dojjLoadReport.priority
+          .slice(0, 8)
+          .map((plant, index) => `
+            <div style="
+              margin-bottom:12px;
+              padding:12px;
+              background:#1f2937;
+              border-radius:10px;
+            ">
+
+              <strong>
+                ${index + 1}.
+                ${plant.name}
+              </strong>
+
+              <br>
+
+              Inventory:
+              ${plant.quantity}
+
+              <br>
+
+              Suggested Push:
+              Sell ${plant.suggestedSell}
+
+            </div>
+          `)
+          .join("")
+      }
+
+    </div>
+
+  </div>
+`;
+
+document.body.insertAdjacentHTML(
+  "beforeend",
+  reportHtml
+);
+
