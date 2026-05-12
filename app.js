@@ -997,7 +997,7 @@ function renderFullInventoryPage(filter = "") {
       ? `${filteredPlants.length} matching line items from ${PLANTS.length}; ${totalPlants} total plants in the complete catalog.`
       : `${PLANTS.length} alphabetized line items; ${totalPlants} total plants available.`;
   }
-  grid.innerHTML = filteredPlants.map(({ plant, index }) => inventoryCardMarkup(plant, index)).join("");
+  grid.innerHTML = sequenceLoadEqualizer(filteredPlants).map(({ plant, index }) => inventoryCardMarkup(plant, index)).join("");
   grid.querySelectorAll("img").forEach((img) => {
     img.addEventListener("error", () => {
       const plant = PLANTS.find((item) => stockPhotoKey(item) === img.dataset.stockPhotoKey);
@@ -1440,3 +1440,53 @@ if (document.getElementById("ordersList")) {
 if (document.getElementById("companyHealthSummary") || document.getElementById("dojjPublicHealth")) {
   startDojjHealthTicker();
 }
+
+function sequenceLoadEqualizer(inventory) {
+
+  const totalStock = inventory.reduce((sum, plant) => {
+    return sum + Number(plant.stock || 0);
+  }, 0);
+
+  const lowLoadMode = totalStock <= 100;
+
+  if (!lowLoadMode) {
+    return inventory;
+  }
+
+  const categoryCounts = {};
+
+  inventory.forEach((plant) => {
+
+    const category = plant.category || "General";
+
+    categoryCounts[category] =
+      (categoryCounts[category] || 0)
+      + Number(plant.stock || 0);
+
+  });
+
+  return inventory
+    .filter((plant) => Number(plant.stock || 0) > 0)
+    .sort((a, b) => {
+
+      const aStock = Number(a.stock || 0);
+      const bStock = Number(b.stock || 0);
+
+      const aCategoryStock =
+        categoryCounts[a.category || "General"] || 0;
+
+      const bCategoryStock =
+        categoryCounts[b.category || "General"] || 0;
+
+      const aPressure =
+        aStock / Math.max(aCategoryStock, 1);
+
+      const bPressure =
+        bStock / Math.max(bCategoryStock, 1);
+
+      return bPressure - aPressure;
+
+    });
+
+}
+
